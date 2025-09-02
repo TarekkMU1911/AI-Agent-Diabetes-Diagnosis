@@ -1,12 +1,15 @@
 import os
 import pandas as pd
 import numpy as np
+from src.utils.hupa_ucm.hupa_ucm_loaders import get_numeric_columns, prepare_output
 
 def generate_column_summary(df, file_name, output_folder):
-    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
+    numeric_cols = get_numeric_columns(df)
     if len(numeric_cols) == 0:
         print(f"No numeric columns in {file_name}")
         return
+
+    file_base, save_dir = prepare_output(file_name, output_folder, "summaries")
 
     summary_data = []
 
@@ -34,7 +37,6 @@ def generate_column_summary(df, file_name, output_folder):
 
     summary_df = pd.DataFrame(summary_data)
 
-    os.makedirs(output_folder, exist_ok=True)
-    save_path = os.path.join(output_folder, f"{os.path.splitext(file_name)[0]}_summary.csv")
+    save_path = os.path.join(save_dir, f"{os.path.splitext(file_name)[0]}_summary.csv")
     summary_df.to_csv(save_path, index=False)
     print(f"Saved summary for {file_name} in {save_path}")
