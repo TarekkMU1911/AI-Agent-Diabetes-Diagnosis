@@ -24,7 +24,7 @@ def load_csv(path, sep=";", encoding="utf-8"):
         df = pd.read_csv(path, sep=sep, encoding=encoding)
         return df
     except Exception as e:
-        print(f"❌ Error loading {path}: {e}")
+        print(f"Error loading {path}: {e}")
         return None
 
 
