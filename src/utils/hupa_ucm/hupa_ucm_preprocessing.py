@@ -1,6 +1,4 @@
 import os
-import pandas as pd
-import numpy as np
 import json
 
 from src.utils.hupa_ucm.hupa_ucm_loaders import get_numeric_columns, prepare_output
@@ -56,15 +54,15 @@ def preprocess_patient_csv(file_path, output_folder, return_json=False):
     # json file
 
     save_json_path = os.path.join(json_dir, f"{patient_name}_daily.json")
-    with open(save_json_path, 'w') as f:
-        json.dump(daily_jsons, f, indent=2, default=lambda x: int(x) if isinstance(x, np.integer) else float(x) if isinstance(x, np.floating) else str(x))
+    with open(save_json_path, 'w') as file:
+        json.dump(daily_jsons, file, indent=2, default=lambda x: int(x) if isinstance(x, np.integer) else float(x) if isinstance(x, np.floating) else str(x))
     print(f"Saved daily JSON: {save_json_path}")
 
     # text file
     save_txt_path = os.path.join(text_dir, f"{patient_name}_daily.txt")
-    with open(save_txt_path, 'w') as f:
+    with open(save_txt_path, 'w') as file:
         for line in daily_texts:
-            f.write(line + '\n')
+            file.write(line + '\n')
     print(f"Saved daily text: {save_txt_path}")
 
     return df, daily_texts, daily_jsons
