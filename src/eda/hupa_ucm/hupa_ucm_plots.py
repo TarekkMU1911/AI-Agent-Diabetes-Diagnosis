@@ -1,16 +1,17 @@
 import os
 import matplotlib.pyplot as plt
 
+from src.utils.hupa_ucm.hupa_ucm_loaders import get_numeric_columns, prepare_output
 
+
+# Create and save boxplots for numeric df columns to visualize outliers
 def plot_outliers(df, file_name, output_folder="../../../Datasets/HUPA-UCM Diabetes Dataset/EDA_Outputs/outliers"):
-    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
+    numeric_cols = get_numeric_columns(df)
     if len(numeric_cols) == 0:
-        print("No numeric columns to plot.")
+        print(f"No numeric columns in {file_name}")
         return
 
-    file_base = os.path.splitext(file_name)[0]
-    save_dir = os.path.join(output_folder, file_base)
-    os.makedirs(save_dir, exist_ok=True)
+    file_base, save_dir = prepare_output(file_name, output_folder, "outliers")
 
     for col in numeric_cols:
         plt.figure(figsize=(6, 4))
@@ -22,16 +23,15 @@ def plot_outliers(df, file_name, output_folder="../../../Datasets/HUPA-UCM Diabe
 
     print(f"Saved outlier plots for {file_name} in {save_dir}")
 
+# Create and save histogram for numeric df columns to visualize outliers
 
 def plot_distributions(df, file_name, output_folder="../../../Datasets/HUPA-UCM Diabetes Dataset/EDA_Outputs/distributions"):
-    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
+    numeric_cols = get_numeric_columns(df)
     if len(numeric_cols) == 0:
-        print("No numeric columns to plot.")
+        print(f"No numeric columns in {file_name}")
         return
 
-    file_base = os.path.splitext(file_name)[0]
-    save_dir = os.path.join(output_folder, file_base)
-    os.makedirs(save_dir, exist_ok=True)
+    file_base, save_dir = prepare_output(file_name, output_folder, "outliers")
 
     for col in numeric_cols:
         plt.figure(figsize=(6, 4))

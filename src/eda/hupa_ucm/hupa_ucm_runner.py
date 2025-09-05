@@ -1,17 +1,15 @@
 import os
-import sys
-sys.path.append('../../utils/hupa_ucm')
-from utils.hupa_ucm.hupa_ucm_loaders import load_csv
+from src.utils.hupa_ucm.hupa_ucm_loaders import load_csv
 
-
+# to apply a list of EDA to a single  df
 def run_eda_on_file(df, file_name, funcs):
     print("*" * 60)
     print(f"File: {file_name}")
 
-    for func in funcs:
-        func(df, file_name)
+    for function in funcs:
+        function(df, file_name)
 
-
+#apply EDA functions to all CSV files in a folder
 def run_eda_on_folder(data_folder, funcs, sep=";", encoding="utf-8"):
     if not os.path.exists(data_folder):
         print("Folder not found:", data_folder)
