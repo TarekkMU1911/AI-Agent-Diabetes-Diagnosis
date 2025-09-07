@@ -16,8 +16,11 @@ index = pc.Index("diabetes-diagnosis-db")
 # Load embedding model
 model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
-# Base dataset path
-BASE_PATH = "..\Datasets\HUPA-UCM Diabetes Dataset\Final\preprocessed"
+# Base dataset path (relative to project root)
+BASE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "Datasets", "HUPA-UCM Diabetes Dataset", "Final", "preprocessed"
+)
 
 # Iterate through patients
 for patient_folder in os.listdir(BASE_PATH):
@@ -83,4 +86,4 @@ for patient_folder in os.listdir(BASE_PATH):
                     vector_id = f"{patient_folder}_{json_file}_{day.get('date','unknown')}"
                     index.upsert([(vector_id, vector, metadata)])
 
-print("Finished uploading all patient data to Pinecone.")
+print(" Finished uploading all patient data to Pinecone.")
