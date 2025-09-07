@@ -26,3 +26,9 @@ def show_describe(df):
 
 def check_duplicates(df):
     print("\n Duplicates:", df.duplicated().sum())
+
+def check_outliers(df):
+    print("\n Possible outliers (values above 99th percentile):")
+    for col in df.select_dtypes(include=["float64", "int64"]).columns:
+        high = df[col].quantile(0.99)
+        print(f"{col}: >{high}")
