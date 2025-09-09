@@ -18,7 +18,9 @@ try:
 except Exception:
     dataset = load_dataset("json", data_files=data_file)["train"]
 
-dataset = dataset.select(range(1000))
+# --- Shuffle dataset  ---
+dataset = dataset.shuffle(seed=42).select(range(30000))  # خدي 10k أمثلة عشوائية
+print(f"Shuffled + selected dataset size: {len(dataset)}")
 
 print("Sample entry:", dataset[0])
 
@@ -38,11 +40,12 @@ def tokenize(batch):
 
 tokenized_dataset = dataset.map(tokenize, batched=True)
 
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(model_name, dtype=torch.float16, device_map="auto")
 
 lora_config = LoraConfig(
     r=8,
     lora_alpha=16,
+    
     target_modules=["q_proj", "v_proj"],
     lora_dropout=0.05,
     bias="none"
