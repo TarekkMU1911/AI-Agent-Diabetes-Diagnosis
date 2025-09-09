@@ -1,63 +1,40 @@
-import json
 import os
 import torch
-from datasets import load_dataset, Dataset
 from transformers import LlamaTokenizer, AutoModelForCausalLM
-from peft import PeftModel
 
-# 1. Paths
-model_dir = "./fine_tuned_llama_test"
-base_model = "openlm-research/open_llama_7b"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(os.path.dirname(script_dir))
+model_dir = os.path.join(repo_root, "fine_tuned_llama_test")
 
-# 2. Load tokenizer
-tokenizer = LlamaTokenizer.from_pretrained(model_dir)
+tokenizer = LlamaTokenizer.from_pretrained(model_dir, legacy=True)
+model = AutoModelForCausalLM.from_pretrained(model_dir, device_map="auto", torch_dtype=torch.float16)
 
-# 3. Load base model
-model = AutoModelForCausalLM.from_pretrained(
-    base_model,
-    torch_dtype=torch.float16,
-    device_map="auto"
-)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
-# 4. Attach LoRA adapters
-model = PeftModel.from_pretrained(model, model_dir)
-model.eval()
+prompts = [
+    # Health-related
+    "Instruction: Summarize the patient's daily health metrics.\nInput: Patient: HUPA9999 | Date: 2021-08-15\nGlucose (avg/min/max): 120/60/200, Heart rate avg: 80, Steps: 15000, Carbs: 10, Insulin: 6, Events: Meals=3, Activities=100, Hypoglycemia=1, Hyperglycemia=5\nOutput:",
 
-# 5. Load some test data
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-data_file = os.path.join(BASE_DIR, "Datasets", "diabetes_unified.json")
+    # General advice
+    "Instruction: Suggest a healthy daily routine for someone who wants to lose weight safely.\nInput:\nOutput:",
+    # Cardiovascular risk assessment
+    "Instruction: Is this patient at risk of cardiovascular disease? Answer 0 = No risk, 1 = At risk.\nInput: 65-year-old female, BMI 28, HbA1c 7.2, glucose 140, history of smoking and hypertension.\nOutput:",
+    "Instruction: Is this patient at risk of cardiovascular disease? Answer 0 = No risk, 1 = At risk.\nInput: 55-year-old male, BMI 24, HbA1c 6.8, glucose 120, no smoking history, no hypertension.\nOutput:",
 
-try:
-    with open(data_file, "r") as f:
-        data = json.load(f)
-    if isinstance(data, list) and isinstance(data[0], dict):
-        dataset = Dataset.from_list(data)
-    else:
-        raise ValueError
-except Exception:
-    dataset = load_dataset("json", data_files=data_file)["train"]
+    # Summarize research
+    "Instruction: Summarize this medical research paper in simple terms.\nInput: Effect of novel diabetes drug XYZ on blood sugar control in type 2 diabetes patients.\nOutput:"
+]
 
-test_dataset = dataset.select(range(5))
-
-def make_prompt(entry):
-    instruction = entry["instruction"]
-    input_text = entry["input"]
-    return f"Instruction: {instruction}\nInput: {input_text}\nOutput:"
-
-# 6. Run inference
-for i, entry in enumerate(test_dataset):
-    prompt = make_prompt(entry)
+for prompt in prompts:
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-
     with torch.no_grad():
-        output_ids = model.generate(**inputs, max_new_tokens=200)
-
-    generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
-    print(f"\n=== Example {i+1} ===")
-    print("Prompt:")
-    print(prompt)
-    print("\nGenerated:")
-    print(generated_text)
-    print("\nExpected Output:")
-    print(entry["output"])
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=200,
+            do_sample=True,
+            temperature=0.7,
+            top_p=0.9
+        )
+    print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+    print("-" * 50)
