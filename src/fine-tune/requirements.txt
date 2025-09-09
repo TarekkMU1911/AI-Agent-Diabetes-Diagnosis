@@ -1,0 +1,5 @@
+transformers
+peft
+accelerate
+datasets
+bitsandbytes
