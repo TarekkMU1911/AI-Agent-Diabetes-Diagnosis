@@ -1,58 +1,77 @@
-from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
+import json
+from datasets import Dataset, load_dataset
+from transformers import LlamaTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
 from peft import LoraConfig, get_peft_model
+import os
+import torch
 
-model_name = "meta-llama/Llama-2-7b-hf"
-dataset_path = "diabetes_unified.jsonl"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+data_file = os.path.join(BASE_DIR, "Datasets", "diabetes_unified.json")
 
-# Load dataset
-dataset = load_dataset("json", data_files=dataset_path, split="train")
+try:
+    with open(data_file, "r") as f:
+        data = json.load(f)
+    if isinstance(data, list) and isinstance(data[0], dict):
+        dataset = Dataset.from_list(data)
+    else:
+        raise ValueError
+except Exception:
+    dataset = load_dataset("json", data_files=data_file)["train"]
 
-# Tokenizer + model
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    load_in_8bit=True,
-    device_map="auto"
-)
+dataset = dataset.select(range(1000))
 
-# LoRA config
+print("Sample entry:", dataset[0])
+
+model_name = "openlm-research/open_llama_7b"
+tokenizer = LlamaTokenizer.from_pretrained(model_name, legacy=True)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
+
+def tokenize(batch):
+    inputs = [
+        f"Instruction: {instr}\nInput: {inp}\nOutput: {out}"
+        for instr, inp, out in zip(batch["instruction"], batch["input"], batch["output"])
+    ]
+    tokenized = tokenizer(inputs, truncation=True, padding="max_length", max_length=512)
+    tokenized["labels"] = tokenized["input_ids"].copy()
+    return tokenized
+
+tokenized_dataset = dataset.map(tokenize, batched=True)
+
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+
 lora_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
+    r=8,
+    lora_alpha=16,
     target_modules=["q_proj", "v_proj"],
     lora_dropout=0.05,
-    bias="none",
-    task_type="CAUSAL_LM"
+    bias="none"
 )
 model = get_peft_model(model, lora_config)
 
-def preprocess(example):
-    instruction = example["instruction"]
-    input_text = example["input"]
-    output = example["output"]
-    text = f"### Instruction:\n{instruction}\n\n### Input:\n{input_text}\n\n### Response:\n{output}"
-    return tokenizer(text, truncation=True, padding="max_length", max_length=512)
-
-tokenized = dataset.map(preprocess, batched=False)
-
-# Training
-args = TrainingArguments(
-    output_dir="./output",
-    per_device_train_batch_size=2,
+training_args = TrainingArguments(
+    output_dir="./fine_tuned_llama_test",
+    per_device_train_batch_size=2,  
     gradient_accumulation_steps=4,
+    warmup_steps=50,
+    num_train_epochs=1,
     learning_rate=2e-4,
-    num_train_epochs=3,
-    save_strategy="epoch",
-    logging_dir="./logs",
-    fp16=True
+    fp16=True,
+    save_strategy="steps",
+    save_steps=100,
+    logging_steps=20,
 )
 
 trainer = Trainer(
     model=model,
-    args=args,
-    train_dataset=tokenized,
-    tokenizer=tokenizer
+    args=training_args,
+    train_dataset=tokenized_dataset
 )
 
 trainer.train()
+
+# --- Save model and tokenizer ---
+model.save_pretrained("./fine_tuned_llama_test")
+tokenizer.save_pretrained("./fine_tuned_llama_test")
+
+print("Test fine-tuning completed!")
