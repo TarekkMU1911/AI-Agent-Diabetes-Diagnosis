@@ -3,3 +3,5 @@ peft
 accelerate
 datasets
 bitsandbytes
+streamlit
+torch
