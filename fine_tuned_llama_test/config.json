@@ -1,0 +1,15 @@
+{
+    "architectures": ["LlamaForCausalLM"],
+    "model_type": "llama",
+    "hidden_size": 4096,
+    "intermediate_size": 11008,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 32,
+    "vocab_size": 32000,
+    "rms_norm_eps": 1e-05,
+    "use_cache": true,
+    "pad_token_id": 0,
+    "bos_token_id": 1,
+    "eos_token_id": 2,
+    "tie_word_embeddings": false
+  }  

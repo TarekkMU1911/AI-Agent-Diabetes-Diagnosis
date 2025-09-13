@@ -1,0 +1,10 @@
+transformers
+torch
+peft
+accelerate
+streamlit
+dotenv
+sentencepiece
+bitsandbytes==0.43.0
+transformers
+huggingface_hub
