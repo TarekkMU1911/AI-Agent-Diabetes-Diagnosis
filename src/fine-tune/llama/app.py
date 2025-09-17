@@ -4,7 +4,7 @@ import requests
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BioGptTokenizer, BioGptForCausalLM
 from dotenv import load_dotenv
-from  model_configs import MODELS, API_TOKEN, pipelines
+from  models_configs import MODELS, API_TOKEN, pipelines
 
 
 def load_biogpt():
