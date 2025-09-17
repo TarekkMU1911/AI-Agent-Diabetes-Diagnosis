@@ -3,7 +3,6 @@ from src.utils.hupa_ucm.hupa_ucm_loaders import load_csv
 
 # to apply a list of EDA to a single  df
 def run_eda_on_file(df, file_name, funcs):
-    print("*" * 60)
     print(f"File: {file_name}")
 
     for function in funcs:
@@ -21,7 +20,6 @@ def run_eda_on_folder(data_folder, funcs, sep=";", encoding="utf-8"):
         return
 
     print("Found CSV files:", csv_files)
-    print('*' * 20)
 
     for file in csv_files:
         path = os.path.join(data_folder, file)
@@ -29,4 +27,3 @@ def run_eda_on_folder(data_folder, funcs, sep=";", encoding="utf-8"):
 
         if df is not None:
             run_eda_on_file(df, file, funcs)
-        print('*' * 20)
