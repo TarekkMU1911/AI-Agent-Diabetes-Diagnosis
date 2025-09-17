@@ -19,7 +19,7 @@ def generate_text(instruction, input_text):
         return f" Request failed: {str(e)}"
 
 # UI
-demo = gr.Interface(
+diabetes_assistant_ui = gr.Interface(
     fn=generate_text,
     inputs=[
         gr.Textbox(
@@ -42,4 +42,4 @@ demo = gr.Interface(
 )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7861)
+    diabetes_assistant_ui.launch(server_name="0.0.0.0", server_port=7861)

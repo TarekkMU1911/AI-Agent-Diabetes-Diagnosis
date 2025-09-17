@@ -4,18 +4,8 @@ import requests
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BioGptTokenizer, BioGptForCausalLM
 from dotenv import load_dotenv
+from  model_configs import MODELS, API_TOKEN, pipelines
 
-load_dotenv()
-API_TOKEN = os.environ.get("HF_TOKEN")
-
-# Configs
-MODELS = {
-    "BioGPT": {"type": "local", "name": "microsoft/biogpt"},
-    "BioGPT-PubMedQA": {"type": "local", "name": "microsoft/BioGPT-Large-PubMedQA"},
-    "LLaMA Fine-Tuned (API)": {"type": "api", "url": "http://127.0.0.1:8000/generate"}
-}
-
-pipelines = {}
 
 def load_biogpt():
 
@@ -77,7 +67,7 @@ def generate_text(model_name, instruction, input_text):
         return f"Error: {str(e)}"
 
 #UI
-demo = gr.Interface(
+diabetes_assistant_ui = gr.Interface(
     fn=generate_text,
     inputs=[
         gr.Dropdown(choices=list(MODELS.keys()), value="BioGPT", label="Choose a Model"),
@@ -90,4 +80,4 @@ demo = gr.Interface(
 )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7863)
+    diabetes_assistant_ui.launch(server_name="0.0.0.0", server_port=7863)
