@@ -12,25 +12,27 @@ from transformers import (
     TrainingArguments,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from config import (
+    BASE_DIR,
+    DATA_PATH,
+    MODEL_ID,
+    OUTPUT_DIR,
+    SEED,
+    SAMPLE_SIZE,
+    MAX_LENGTH,
+    BATCH_SIZE,
+    GRAD_ACCUM,
+    NUM_EPOCHS,
+    LEARNING_RATE,
+    WARMUP_RATIO,
+    LOG_STEPS,
+    SAVE_STEPS,
+    EVAL_RATIO,
+)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-DATA_PATH = os.path.join(BASE_DIR, "Datasets", "diabetes_unified.jsonl")
-
-MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
-OUTPUT_DIR = "./mistral-diabetes-lora"
+# Load secrets
 load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
-SEED = 42
-SAMPLE_SIZE = 40000
-MAX_LENGTH = 512
-BATCH_SIZE = 2
-GRAD_ACCUM = 16
-NUM_EPOCHS = 2
-LEARNING_RATE = 2e-4
-WARMUP_RATIO = 0.03
-LOG_STEPS = 10
-SAVE_STEPS = 1000
-EVAL_RATIO = 0.05
 # Utilities
 def set_seed(seed: int):
     random.seed(seed)
