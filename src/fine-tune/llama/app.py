@@ -1,10 +1,9 @@
 import gradio as gr
-import os
 import requests
 import torch
 from pinecone_plugins.assistant.models.assistant_model import MODELS
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BioGptTokenizer, BioGptForCausalLM
-from config import API_TOKEN, pipelines
+from models_configs import API_TOKEN, pipelines
 
 
 
